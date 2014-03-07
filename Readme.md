@@ -30,7 +30,7 @@ The metrics exposed by this plugin are:
 - `helpscout.total tickets yesterday trailing average` 
 - `helpscout.total tickets 0-1 weeks ago`
 - `helpscout.total tickets 1-2 weeks ago`
-- `helpscout.total active tickets by owner` - total active tickets
+- `helpscout.total active tickets by owner`
 - `helpscout.oldest ticket time`
 - `helpscout.oldest ticket owner`
 - `helpscout.oldest ticket shaming`
@@ -47,10 +47,10 @@ var geckoboard = require('geckoboard')('api-key');
 
 new Dashboards()
   .use(helpscout('apiKey', 'mailbox-id'))
-  .use(pipe('helpscout.total tickets yesterday trailing average', widget('widget-id').number))
-  .use(pipe('helpscout.total active tickets', widget('widget-id').number))
-  .use(pipe('helpscout.total active tickets by owner', widget('widget-id').pie))
-  .use(pipe('helpscout.oldest ticket shaming', widget('widget-id').text))
+  .use(pipe('helpscout.total tickets yesterday trailing average', geckoboard('widget-id').number))
+  .use(pipe('helpscout.total active tickets', geckoboard('widget-id').number))
+  .use(pipe('helpscout.total active tickets by owner', geckoboard('widget-id').pie))
+  .use(pipe('helpscout.oldest ticket shaming', geckoboard('widget-id').text))
   .run();
 ```
 
