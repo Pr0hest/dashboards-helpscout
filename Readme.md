@@ -1,9 +1,9 @@
 
 # dashboards-helpscout
 
-    A [Helpscout](https://www.helpscout.net/) plugin for [segmentio/dashboards](https://github.com/segmentio/dashboards).
+A [Helpscout](https://www.helpscout.net/) plugin for [segmentio/dashboards](https://github.com/segmentio/dashboards).
 
-    Use this plugin to visualize your active ticket count, and who is behind on their tickets.
+Use this plugin to visualize your active ticket count, and who is behind on their tickets.
 
 ![](https://f.cloud.github.com/assets/658544/2361183/33c4df78-a62e-11e3-9921-6591e787e43e.png)
 
