@@ -25,13 +25,11 @@ function create (apiKey, mailboxId) {
     var results = data.helpscout = data.helpscout || {};
     conversations(mailbox, function (err, convos) {
       if (err) return callback(err);
-      var active = convos.filter(function (convo) {
-        return convo.status === 'active';
-      });
 
       weekly(convos, results);
-      totalActive(active, results);
-      userBreakdown(active, results);
+      totalActive(convos, results);
+      oldestBreakdown(convos, results);
+      todayBreakdown(convos, results);
 
       callback();
     });
@@ -41,11 +39,12 @@ function create (apiKey, mailboxId) {
 /**
  * Calculate the total active tickets.
  *
- * @param {Array|Conversation} active
+ * @param {Array|Conversation} convos
  * @param {Object} results
  */
 
-function totalActive (active, results) {
+function totalActive (convos, results) {
+  var active = convos.filter(function (convo) { return convo.status === 'active'; });
   results['total active tickets'] = active.length;
 }
 
@@ -69,17 +68,19 @@ function weekly (convos, results) {
 }
 
 /**
- * Calculate total active tickets by owner.
+ * Calculate oldest tickets by owner.
  *
- * @param {Array|Conversation} active
+ * @param {Array|Conversation} convos
  * @param {Object} results
  */
 
-function userBreakdown (active, results) {
+function oldestBreakdown (convos, results) {
   var breakdown = {};
 
   var oldestTime = null;
   var oldestOwner = null;
+
+  var active = convos.filter(function (convo) { return convo.status === 'active'; });
 
   active.forEach(function (convo) {
     var owner = convo.owner;
@@ -101,8 +102,51 @@ function userBreakdown (active, results) {
 
   results['oldest ticket time'] = new Date(oldestTime);
   results['oldest ticket owner'] = oldestOwner;
+  results['oldest ticket timeago'] = timeago(new Date(oldestTime));
   results['oldest ticket shaming'] = oldestOwner + ': ' + timeago(new Date(oldestTime)) + ' of no response.';
 }
+
+/**
+ * Calculate today tickets by owner.
+ *
+ * @param {Array|Conversation} convos
+ * @param {Object} results
+ */
+
+function todayBreakdown (convos, results) {
+  var breakdown = {};
+
+  var end = ceil(new Date());
+  var start = floor(new Date());
+
+  userModifiedAt(convos, start, end).forEach(function (convo) {
+    var owner = convo.owner;
+    if (owner) {
+      var n = name(owner);
+      if (!breakdown[n]) breakdown[n] = 0;
+      breakdown[n] += 1;
+    }
+  });
+
+  var sorted = Object.keys(breakdown).sort(function (k1, k2) {
+    return breakdown[k1] > breakdown[k2] ? -1: 1;
+  });
+
+  var first = sorted.length > 0 ? sorted[0] : null;
+  var second = sorted.length > 1 ? sorted[1] : null;
+
+  if (first) {
+    results['first place owner'] = first;
+    results['first place replies'] = breakdown[first];
+  }
+  if (second) {
+    results['second place owner'] = second;
+    results['second place replies'] = breakdown[second];
+  }
+
+  results['tickets modified today by owner'] = breakdown;
+}
+
 
 /**
  * Get a friendly name for a conversation assigned `owner`.
@@ -161,4 +205,32 @@ function userModifiedAt (convos, start, end) {
     var userModifiedAt = (new Date(convo.userModifiedAt)).getTime();
     return userModifiedAt >= s && userModifiedAt <= e;
   });
+}
+
+/**
+ * Floor the `date` to the nearest day,
+ * while keeping in the same locale
+ * (unlike UTC'ing like Dates.day.floor).
+ */
+
+function floor (date) {
+  date = new Date(date);
+  date.setHours(0);
+  date.setMinutes(0);
+  date.setSeconds(0);
+  return date;
+}
+
+/**
+ * Floor the `date` to the nearest day,
+ * while keeping in the same locale
+ * (unlike UTC'ing like Dates.day.floor).
+ */
+
+function ceil (date) {
+  date = new Date(date);
+  date.setHours(23);
+  date.setMinutes(59);
+  date.setSeconds(59);
+  return date;
 }
